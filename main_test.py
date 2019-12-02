@@ -168,7 +168,7 @@ def isplane(frame):
         return False
 
 
-def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list):
+def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list, CmpVideo_name, is_PQF=False):
     """Enhance PQFs or non-PQFs, record dpsnr, dssim and enhanced frames."""
 
     global enhanced_list, sum_dpsnr, sum_dssim
@@ -255,8 +255,13 @@ def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list)
 
         average_dpsnr = sum_dpsnr_part / nfs
         average_dssim = sum_dssim_part / nfs
-        print("dPSNR: %.3f - dSSIM: %.3f - nfs: %4d" % (average_dpsnr, average_dssim, nfs), flush=True)
-        file_object.write("dPSNR: %.3f - dSSIM: %.3f - nfs: %4d\n" % (average_dpsnr, average_dssim, nfs))
+        if is_PQF:
+            print(CmpVideo_name +" -PQF dPSNR: %.3f - dSSIM: %.3f - nfs: %4d" % (average_dpsnr, average_dssim, nfs), flush=True)
+            file_object.write(CmpVideo_name + " -PQF dPSNR: %.3f - dSSIM: %.3f - nfs: %4d\n" % (average_dpsnr, average_dssim, nfs))
+        else:
+            print(CmpVideo_name +"  -NoPQF  dPSNR: %.3f - dSSIM: %.3f - nfs: %4d" % (average_dpsnr, average_dssim, nfs), flush=True)
+            file_object.write(CmpVideo_name + " -NoPQF dPSNR: %.3f - dSSIM: %.3f - nfs: %4d\n" % (average_dpsnr, average_dssim, nfs))
+
         file_object.flush()
 
 ### Enhancement video by video
@@ -275,7 +280,7 @@ for c in f.readlines():
     RawVideo_path = "/media/iceclear/yuhang/YUV_All/"+RawVideo_name+'.yuv'
 
     dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"/MFQE2.0/"
-    createpath(dir_saveframe+video_name)
+    createpath(dir_saveframe+CmpVideo_name)
 
 
 
@@ -304,7 +309,7 @@ for c in f.readlines():
 
         # Enhance PQF
         dir_model_pre = dir_model + "/PQF_enhancement" + "/model_QP" + str(QP)
-        func_enhance(dir_model_pre, QP, PrePQFIndex_list_part, CmpPQFIndex_list_part, SubPQFIndex_list_part)
+        func_enhance(dir_model_pre, QP, PrePQFIndex_list_part, CmpPQFIndex_list_part, SubPQFIndex_list_part, CmpVideo_name,True)
 
     ### Non-PQF enhancement
     print("enhancing non-PQFs...")
@@ -317,7 +322,7 @@ for c in f.readlines():
 
         # Enhance non-PQF
         dir_model_pre = dir_model + "/NP_enhancement" + "/model_QP" + str(QP)
-        func_enhance(dir_model_pre, QP, PrePQFIndex_list_part, NonPQFIndex_list_part, SubPQFIndex_list_part)
+        func_enhance(dir_model_pre, QP, PrePQFIndex_list_part, NonPQFIndex_list_part, SubPQFIndex_list_part, CmpVideo_name,False)
 
     ### Output and record result
     average_dpsnr = sum_dpsnr / nfs
@@ -328,6 +333,7 @@ for c in f.readlines():
 
     [y_lq,u_lq,v_lq] = read_YUV420(CmpVideo_path,height,width,nfs+1)
     index = 0
+    print(len(enhanced_list))
     for item in enhanced_list:
         saveimg(dir_saveframe,CmpVideo_name,width,height,item, u_lq, v_lq, index)
         index+=1

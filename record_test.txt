@@ -1,3 +1,6 @@
-dPSNR: 0.444 - dSSIM: 0.008 - nfs:  125
-dPSNR: 0.822 - dSSIM: 0.018 - nfs:  375
-dPSNR: 0.728 - dSSIM: 0.016 - nfs:  500 - BasketballPass_416x240_500
+RaceHorses_832x480_30 -PQF dPSNR: 0.473 - dSSIM: 0.008 - nfs:   75
+RaceHorses_832x480_30 -NoPQF dPSNR: 0.282 - dSSIM: 0.005 - nfs:  225
+dPSNR: 0.330 - dSSIM: 0.006 - nfs:  300 - RaceHorses_832x480_30
+BasketballPass_416x240_50 -PQF dPSNR: 0.646 - dSSIM: 0.009 - nfs:  125
+BasketballPass_416x240_50 -NoPQF dPSNR: 0.405 - dSSIM: 0.008 - nfs:  375
+dPSNR: 0.465 - dSSIM: 0.008 - nfs:  500 - BasketballPass_416x240_50
