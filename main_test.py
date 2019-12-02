@@ -168,7 +168,7 @@ def isplane(frame):
         return False
 
 
-def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list, CmpVideo_name, is_PQF=False):
+def func_enhance(ir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list, CmpVideo_name, is_PQF=False):
     """Enhance PQFs or non-PQFs, record dpsnr, dssim and enhanced frames."""
 
     global enhanced_list, sum_dpsnr, sum_dssim
@@ -176,9 +176,15 @@ def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list,
     tf.reset_default_graph()
 
     ### Defind enhancement process
-    x1 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # previous
-    x2 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # current
-    x3 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # subsequent
+    if width <= 1920:
+        x1 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # previous
+        x2 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # current
+        x3 = tf.placeholder(tf.float32, [BATCH_SIZE, height, width, CHANNEL])  # subsequent
+
+    else: # 2k
+        x1 = tf.placeholder(tf.float32, [BATCH_SIZE, int(height / 2), int(width / 2), CHANNEL])  # previous
+        x2 = tf.placeholder(tf.float32, [BATCH_SIZE, int(height / 2), int(width / 2), CHANNEL])  # current
+        x3 = tf.placeholder(tf.float32, [BATCH_SIZE, int(height / 2), int(width / 2), CHANNEL])  # subsequent
 
     if QP in net1_list:
         is_training = tf.placeholder_with_default(False, shape=())
@@ -206,46 +212,104 @@ def func_enhance(dir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list,
 
         for ite_frame in range(nfs):
 
-            # Load frames
-            pre_frame = y_import(CmpVideo_path, height, width, 1, PreIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
-            cmp_frame = y_import(CmpVideo_path, height, width, 1, CmpIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
-            sub_frame = y_import(CmpVideo_path, height, width, 1, SubIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+            if width <= 1920:
+                # Load frames
+                pre_frame = y_import(CmpVideo_path, height, width, 1, PreIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+                cmp_frame = y_import(CmpVideo_path, height, width, 1, CmpIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+                sub_frame = y_import(CmpVideo_path, height, width, 1, SubIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
 
-            # if cmp frame is plane?
-            if isplane(cmp_frame):
-                continue
+                # if cmp frame is plane?
+                if isplane(cmp_frame):
+                    continue
 
-            # if PQF frames are plane?
-            if isplane(pre_frame):
-                 pre_frame = np.copy(cmp_frame)
-            if isplane(sub_frame):
-                 sub_frame = np.copy(cmp_frame)
+                # if PQF frames are plane?
+                if isplane(pre_frame):
+                     pre_frame = np.copy(cmp_frame)
+                if isplane(sub_frame):
+                     sub_frame = np.copy(cmp_frame)
 
-            # Enhance
-            if QP in net1_list:
-                enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:pre_frame, x2:cmp_frame, x3:sub_frame, is_training:False})
+                # Enhance
+                if QP in net1_list:
+                    enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:pre_frame, x2:cmp_frame, x3:sub_frame, is_training:False})
+                else:
+                    enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:pre_frame, x2:cmp_frame, x3:sub_frame})
+
+                # Record for output video
+                enhanced_list[CmpIndex_list[ite_frame]] = np.squeeze(enhanced_frame)
+
+                # Evaluate and accumulate dpsnr
+                raw_frame = np.squeeze(y_import(RawVideo_path, height, width, 1, CmpIndex_list[ite_frame])) / 255.0
+                cmp_frame = np.squeeze(cmp_frame)
+                enhanced_frame = np.squeeze(enhanced_frame)
+
+                raw_frame = np.float32(raw_frame)
+                cmp_frame = np.float32(cmp_frame)
+
+                psnr_ori = compare_psnr(cmp_frame, raw_frame, data_range=1.0)
+                psnr_aft = compare_psnr(enhanced_frame, raw_frame, data_range=1.0)
+
+                ssim_ori = compare_ssim(cmp_frame, raw_frame, data_range=1.0)
+                ssim_aft = compare_ssim(enhanced_frame, raw_frame, data_range=1.0)
+
+                sum_dpsnr_part += psnr_aft - psnr_ori
+                sum_dssim_part += ssim_aft - ssim_ori
+
             else:
-                enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:pre_frame, x2:cmp_frame, x3:sub_frame})
 
-            # Record for output video
-            enhanced_list[CmpIndex_list[ite_frame]] = np.squeeze(enhanced_frame)
+                pre_frame = y_import(CmpVideo_path, height, width, 1, PreIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+                cmp_frame = y_import(CmpVideo_path, height, width, 1, CmpIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+                sub_frame = y_import(CmpVideo_path, height, width, 1, SubIndex_list[ite_frame])[:,:,:,np.newaxis] / 255.0
+                enhance_part_list=[]
 
-            # Evaluate and accumulate dpsnr
-            raw_frame = np.squeeze(y_import(RawVideo_path, height, width, 1, CmpIndex_list[ite_frame])) / 255.0
-            cmp_frame = np.squeeze(cmp_frame)
-            enhanced_frame = np.squeeze(enhanced_frame)
+                # if cmp frame is plane?
+                if isplane(cmp_frame):
+                    continue
 
-            raw_frame = np.float32(raw_frame)
-            cmp_frame = np.float32(cmp_frame)
+                # if PQF frames are plane?
+                if isplane(pre_frame):
+                     pre_frame = np.copy(cmp_frame)
+                if isplane(sub_frame):
+                     sub_frame = np.copy(cmp_frame)
 
-            psnr_ori = compare_psnr(cmp_frame, raw_frame, data_range=1.0)
-            psnr_aft = compare_psnr(enhanced_frame, raw_frame, data_range=1.0)
+                for height_start in [0, int(height / 2)]:
 
-            ssim_ori = compare_ssim(cmp_frame, raw_frame, data_range=1.0)
-            ssim_aft = compare_ssim(enhanced_frame, raw_frame, data_range=1.0)
+                    for width_start in [0, int(width / 2)]:
 
-            sum_dpsnr_part += psnr_aft - psnr_ori
-            sum_dssim_part += ssim_aft - ssim_ori
+                        x1_feed = pre_frame[:, height_start: (height_start + int(height / 2)), width_start: (width_start + int(width / 2)), :]
+                        x2_feed = cmp_frame[:, height_start: (height_start + int(height / 2)), width_start: (width_start + int(width / 2)), :]
+                        x3_feed = sub_frame[:, height_start: (height_start + int(height / 2)), width_start: (width_start + int(width / 2)), :]
+
+                        # Enhance
+                        if QP in net1_list:
+                            enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:x1_feed, x2:x2_feed, x3:x3_feed, is_training:False})
+                        else:
+                            enhanced_frame = sess.run(x2_enhanced, feed_dict={x1:x1_feed, x2:x2_feed, x3:x3_feed})
+
+                        enhance_part_list.append(np.squeeze(enhanced_frame))
+
+                enhanced_frame_h1 = np.hstack((enhance_part_list[0],enhance_part_list[1]))
+                enhanced_frame_h2 = np.hstack((enhance_part_list[2],enhance_part_list[3]))
+                enhanced_frame_sum = np.vstack((enhanced_frame_h1,enhanced_frame_h2))
+
+                # Record for output video
+                enhanced_list[CmpIndex_list[ite_frame]] = np.squeeze(enhanced_frame_sum)
+
+                # Evaluate and accumulate dpsnr
+                raw_frame = np.squeeze(y_import(RawVideo_path, height, width, 1, CmpIndex_list[ite_frame])) / 255.0
+                cmp_frame = np.squeeze(cmp_frame)
+                enhanced_frame = np.squeeze(enhanced_frame)
+
+                raw_frame = np.float32(raw_frame)
+                cmp_frame = np.float32(cmp_frame)
+
+                psnr_ori = compare_psnr(cmp_frame, raw_frame, data_range=1.0)
+                psnr_aft = compare_psnr(enhanced_frame_sum, raw_frame, data_range=1.0)
+
+                ssim_ori = compare_ssim(cmp_frame, raw_frame, data_range=1.0)
+                ssim_aft = compare_ssim(enhanced_frame_sum, raw_frame, data_range=1.0)
+
+                sum_dpsnr_part += psnr_aft - psnr_ori
+                sum_dssim_part += ssim_aft - ssim_ori
 
             print("%d | %d at QP = %d" % (ite_frame + 1, nfs, QP), end="\r")
         print("              ", end="\r")

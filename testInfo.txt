@@ -1,3 +1,5 @@
+PeopleOnStreet_2560x1600_30_crop    2560    1600     150
+Traffic_2560x1600_30_crop    2560    1600     150
 RaceHorses_832x480_30     832     480     300
 BasketballPass_416x240_50     416     240     500
 BasketballDrill_832x480_50     832     480     500
@@ -14,5 +16,3 @@ RaceHorses_416x240_30     416     240     300
 PartyScene_832x480_50     832     480     500
 FourPeople_1280x720_60    1280     720     600
 Johnny_1280x720_60    1280     720     600
-PeopleOnStreet_2560x1600_30_crop    2560    1600     150
-Traffic_2560x1600_30_crop    2560    1600     150

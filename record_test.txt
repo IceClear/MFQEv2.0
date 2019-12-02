@@ -1,6 +1,9 @@
+PeopleOnStreet_2560x1600_30_crop -PQF dPSNR: 0.761 - dSSIM: 0.008 - nfs:   38
+PeopleOnStreet_2560x1600_30_crop -NoPQF dPSNR: 0.596 - dSSIM: 0.008 - nfs:  112
+dPSNR: 0.638 - dSSIM: 0.008 - nfs:  150 - PeopleOnStreet_2560x1600_30_crop
+Traffic_2560x1600_30_crop -PQF dPSNR: 0.508 - dSSIM: 0.005 - nfs:   38
+Traffic_2560x1600_30_crop -NoPQF dPSNR: 0.254 - dSSIM: 0.004 - nfs:  112
+dPSNR: 0.318 - dSSIM: 0.004 - nfs:  150 - Traffic_2560x1600_30_crop
 RaceHorses_832x480_30 -PQF dPSNR: 0.473 - dSSIM: 0.008 - nfs:   75
 RaceHorses_832x480_30 -NoPQF dPSNR: 0.282 - dSSIM: 0.005 - nfs:  225
 dPSNR: 0.330 - dSSIM: 0.006 - nfs:  300 - RaceHorses_832x480_30
-BasketballPass_416x240_50 -PQF dPSNR: 0.646 - dSSIM: 0.009 - nfs:  125
-BasketballPass_416x240_50 -NoPQF dPSNR: 0.405 - dSSIM: 0.008 - nfs:  375
-dPSNR: 0.465 - dSSIM: 0.008 - nfs:  500 - BasketballPass_416x240_50
