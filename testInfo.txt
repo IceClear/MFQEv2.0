@@ -1,3 +1,4 @@
+BQTerrace_1920x1080_60    1920    1080     600
 PeopleOnStreet_2560x1600_30_crop    2560    1600     150
 Traffic_2560x1600_30_crop    2560    1600     150
 RaceHorses_832x480_30     832     480     300
@@ -7,7 +8,6 @@ Kimono_1920x1080_24    1920    1080     240
 BasketballDrive_1920x1080_50    1920    1080     500
 BlowingBubbles_416x240_50     416     240     500
 KristenAndSara_1280x720_60    1280     720     600
-BQTerrace_1920x1080_60    1920    1080     600
 ParkScene_1920x1080_24    1920    1080     240
 Cactus_1920x1080_50    1920    1080     500
 BQMall_832x480_60     832     480     600

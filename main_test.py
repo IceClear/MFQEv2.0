@@ -7,13 +7,9 @@ from utils import *
 import subprocess
 
 ### Settings
-dir_CmpVideo = "/media/iceclear/yuhang/RA_Rec_nof/"
-dir_RawVideo = "/media/iceclear/yuhang/YUV_All/"
 dir_model = "Models"
 
-file_object = open("record_test.txt", 'w')
-
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
 
 
@@ -329,6 +325,13 @@ def func_enhance(ir_model_pre, QP, PreIndex_list, CmpIndex_list, SubIndex_list, 
         file_object.flush()
 
 ### Enhancement video by video
+no_f = False
+if no_f:
+    record_path = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+'nof/MFQE2.0/'
+else:
+    record_path = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+'/MFQE2.0/'
+createpath(record_path)
+file_object = open(record_path+"record_test.txt", 'w')
 f = open('./testInfo.txt','r')
 for c in f.readlines():
     c_array = c.split()
@@ -338,12 +341,17 @@ for c in f.readlines():
     nfs = int(c_array[3])
     width = int(c_array[1])
     height = int(c_array[2])
-    CmpVideo_path = "/media/iceclear/yuhang/RA_Rec_nof/"+'rec_nof_RA_'+CmpVideo_name+'_qp'+str(QP_video)+'_nf'+str(nfs)+".yuv"
+
+    if no_f:
+        CmpVideo_path = "/media/iceclear/yuhang/RA_Rec_nof/"+'rec_nof_RA_'+CmpVideo_name+'_qp'+str(QP_video)+'_nf'+str(nfs)+".yuv"
+        dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"_nof/MFQE2.0/"
+    else:
+        CmpVideo_path = "/media/iceclear/yuhang/RA_Rec/"+'rec_RA_'+CmpVideo_name+'_qp'+str(QP_video)+'_nf'+str(nfs)+".yuv"
+        dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"/MFQE2.0/"
 
     RawVideo_name = c_array[0]
     RawVideo_path = "/media/iceclear/yuhang/YUV_All/"+RawVideo_name+'.yuv'
 
-    dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"/MFQE2.0/"
     createpath(dir_saveframe+CmpVideo_name)
 
 
@@ -397,7 +405,7 @@ for c in f.readlines():
 
     [y_lq,u_lq,v_lq] = read_YUV420(CmpVideo_path,height,width,nfs+1)
     index = 0
-    print(len(enhanced_list))
+    # print(len(enhanced_list))
     for item in enhanced_list:
         saveimg(dir_saveframe,CmpVideo_name,width,height,item, u_lq, v_lq, index)
         index+=1
