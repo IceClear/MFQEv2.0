@@ -336,28 +336,30 @@ f = open('./testInfo.txt','r')
 for c in f.readlines():
     c_array = c.split()
     ### Extract info from cmp video path
-    CmpVideo_name = c_array[0]
-    print('>>>>>>>>>>>>>> '+CmpVideo_name+' is starting')
+    video_name_ori = c_array[0]
     nfs = int(c_array[3])
     width = int(c_array[1])
     height = int(c_array[2])
+    video_name_split = video_name_ori.split('_')
+    CmpVideo_name = video_name_split[0]+'_'+video_name_split[1]+'_'+str(nfs)
+    print('>>>>>>>>>>>>>> '+CmpVideo_name+' is starting')
 
     if no_f:
         CmpVideo_path = "/media/iceclear/yuhang/RA_Rec_nof/"+'rec_nof_RA_'+CmpVideo_name+'_qp'+str(QP_video)+'_nf'+str(nfs)+".yuv"
         dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"_nof/MFQE2.0/"
     else:
-        CmpVideo_path = "/media/iceclear/yuhang/RA_Rec/"+'rec_RA_'+CmpVideo_name+'_qp'+str(QP_video)+'_nf'+str(nfs)+".yuv"
+        CmpVideo_path = "/media/iceclear/yangren/test_18/HM16.5_LDP/"+"QP"+str(QP_video)+"/"+CmpVideo_name+".yuv"
         dir_saveframe = "/media/iceclear/IceKing2/compare_results/QP_"+str(QP_video)+"/MFQE2.0/"
 
-    RawVideo_name = c_array[0]
-    RawVideo_path = "/media/iceclear/yuhang/YUV_All/"+RawVideo_name+'.yuv'
+    RawVideo_name = CmpVideo_name
+    RawVideo_path = "/media/iceclear/yangren/test_18/raw/"+RawVideo_name+'.yuv'
 
     createpath(dir_saveframe+CmpVideo_name)
 
 
 
     # Load PQF label and ApprQP label
-    PQF_label = list(np.load(os.path.join(dir_PQFLabel, "PQFLabel_" + CmpVideo_name + "0.npy")))
+    PQF_label = list(np.load(os.path.join(dir_PQFLabel, "PQFLabel_" + CmpVideo_name + ".npy")))
     if opt_QPLabel:
         ApprQP_label = list(np.load(os.path.join(dir_ApprQP, "ApprQP_" + CmpVideo_name + ".npy")))
     else:
